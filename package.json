@@ -1,0 +1,20 @@
+{
+  "name": "twilio-voice-demo",
+  "version": "1.0.0",
+  "description": "Simple Twilio Voice web client demo (browser + Node.js token server)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@twilio/voice-sdk": "^2.16.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "twilio": "^5.3.0"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^29.0.0",
+    "@rollup/plugin-node-resolve": "^16.0.3",
+    "rollup": "^4.53.2"
+  }
+}
