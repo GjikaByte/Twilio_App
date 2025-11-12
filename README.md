@@ -1,7 +1,7 @@
 
 # Twilio Voice Web Client Demo
 
-This is a minimal example that lets you make and receive calls on your Twilio number from your browser.
+This is an app that lets you make and receive calls on your Twilio number from your browser.
 
 ## 1. Prerequisites
 
