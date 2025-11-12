@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Twilio Voice Web Client Demo (v2.7.1)</title>
+  </head>
+  <body>
+    <h2>Twilio Voice Web Client (andi)</h2>
+    <p>Status: <span id="status">Connecting…</span></p>
+
+    <div>
+      <input id="phoneNumber" placeholder="+19362748462" />
+      <button id="callButton">📞 Call</button>
+      <button id="hangupButton">❌ Hang up</button>
+    </div>
+
+    <!-- ✅ Load the latest Twilio Voice SDK v2 -->
+    <script src="/js/twilio-voice.min.js"></script>
+
+    <script>
+      const statusEl = document.getElementById("status");
+      const callButton = document.getElementById("callButton");
+      const hangupButton = document.getElementById("hangupButton");
+      const phoneInput = document.getElementById("phoneNumber");
+
+      let device;
+      let activeCall;
+
+      // 🎧 Chrome/Safari audio policy workaround
+      document.addEventListener(
+        "click",
+        () => {
+          if (device && device.audio && device.audio.context?.state === "suspended") {
+            device.audio.context.resume();
+            console.log("AudioContext resumed after user gesture");
+          }
+        },
+        { once: true }
+      );
+
+      // 🔑 Fetch Access Token from your Node.js backend
+      fetch("/token")
+        .then((res) => res.json())
+        .then(async (data) => {
+          const token = data.token;
+          console.log("Token received:", token ? "OK" : "MISSING");
+
+          // ✅ Initialize Device using the new global object (TwilioVoice)
+          device = new Twilio.Device(token, {
+            logLevel: "info",
+          });
+
+          // Device registered and ready
+          device.on("registered", () => {
+            statusEl.textContent = "Ready (waiting for calls)…";
+            console.log("Twilio Device registered");
+          });
+
+          // Device errors
+          device.on("error", (error) => {
+            console.error("Twilio Device error:", error);
+            statusEl.textContent = "Error: " + error.message;
+          });
+
+          // Handle incoming calls
+          device.on("incoming", (call) => {
+            console.log("Incoming call from", call.parameters.From);
+            if (confirm(`Accept call from ${call.parameters.From}?`)) {
+              call.accept();
+              activeCall = call;
+              statusEl.textContent = "In call";
+            } else {
+              call.reject();
+            }
+          });
+
+          // Register the device
+          await device.register();
+        })
+        .catch((err) => {
+          console.error("Error fetching token", err);
+          statusEl.textContent = "Could not get token. Is the server running?";
+        });
+
+      // 📞 Make an outgoing call
+      async function makeCall() {
+        if (!device) {
+          alert("Device not ready yet");
+          return;
+        }
+
+        const number = phoneInput.value || "+19362748462";
+        console.log("Dialing", number);
+
+        try {
+          const call = await device.connect({ params: { To: number } });
+          activeCall = call;
+          statusEl.textContent = "In call with " + number;
+
+          call.on("disconnect", () => {
+            statusEl.textContent = "Call ended.";
+            activeCall = null;
+          });
+        } catch (err) {
+          console.error("Call failed:", err);
+          statusEl.textContent = "Call failed: " + err.message;
+        }
+      }
+
+      // ❌ Hang up
+      function hangUp() {
+        if (activeCall) {
+          activeCall.disconnect();
+          statusEl.textContent = "Call ended.";
+        } else {
+          console.warn("No active call to hang up");
+        }
+      }
+
+      // Button handlers
+      callButton.addEventListener("click", makeCall);
+      hangupButton.addEventListener("click", hangUp);
+    </script>
+  </body>
+</html>
