@@ -15,7 +15,7 @@ This is an app that lets you make and receive calls on your Twilio number from y
     <?xml version="1.0" encoding="UTF-8"?>
     <Response>
       <Dial>
-        <Client>andi</Client>
+        <Client>user</Client>
       </Dial>
     </Response>
     ```
